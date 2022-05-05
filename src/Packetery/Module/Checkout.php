@@ -483,7 +483,7 @@ class Checkout {
 	public function register_hooks(): void {
 		add_action( 'woocommerce_review_order_before_payment', array( $this, 'renderWidgetButton' ) );
 		add_action( 'woocommerce_after_checkout_form', array( $this, 'render_after_checkout_form' ) );
-		add_action( 'woocommerce_after_order_notes', array( $this, 'addPickupPointFields' ) );
+		add_action( 'woocommerce_review_order_before_submit', array( $this, 'addPickupPointFields' ) );
 		add_action( 'woocommerce_checkout_process', array( $this, 'validateCheckoutData' ) );
 		add_action( 'woocommerce_checkout_update_order_meta', array( $this, 'updateOrderMeta' ) );
 		add_action( 'woocommerce_review_order_before_shipping', array( $this, 'updateShippingRates' ), 10, 2 );
