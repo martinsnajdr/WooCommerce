@@ -18,8 +18,8 @@ use Packetery\Module\Log;
 use Packetery\Module\Options;
 use Packetery\Module\Order;
 use Packetery\Module\Product;
-use PacketeryLatte\Engine;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http\Request;
 use WC_Order;
 
 /**

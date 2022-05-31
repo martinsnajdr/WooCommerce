@@ -16,9 +16,9 @@ use Packetery\Module\FormFactory;
 use Packetery\Module\MessageManager;
 use Packetery\Module\Options;
 use Packetery\Module\Plugin;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Form;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Form;
+use PacketeryVendor\Nette\Http\Request;
 
 /**
  * Class Metabox

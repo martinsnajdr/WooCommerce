@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace Packetery\Module;
 
-use PacketeryLatte\Engine;
+use PacketeryVendor\Latte\Engine;
 
 /**
  * Class Message_Manager

@@ -14,10 +14,10 @@ use Packetery\Module\Checkout;
 use Packetery\Module\FormFactory;
 use Packetery\Module\FormValidators;
 use Packetery\Module\MessageManager;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Container;
-use PacketeryNette\Forms\Form;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Container;
+use PacketeryVendor\Nette\Forms\Form;
+use PacketeryVendor\Nette\Http\Request;
 
 /**
  * Class OptionsPage

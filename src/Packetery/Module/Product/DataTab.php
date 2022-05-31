@@ -12,8 +12,8 @@ namespace Packetery\Module\Product;
 
 use Packetery\Module\FormFactory;
 use Packetery\Module\Product;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Form;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Form;
 
 /**
  * Class Tab

@@ -11,8 +11,8 @@ namespace Packetery\Module\Order;
 
 use Packetery\Core\Helper;
 use Packetery\Module\Carrier;
-use PacketeryLatte\Engine;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http\Request;
 
 /**
  * Class GridExtender.

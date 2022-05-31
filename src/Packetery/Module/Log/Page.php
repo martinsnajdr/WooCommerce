@@ -12,7 +12,7 @@ namespace Packetery\Module\Log;
 
 use Packetery\Core\Log\ILogger;
 use Packetery\Core\Log\Record;
-use PacketeryLatte\Engine;
+use PacketeryVendor\Latte\Engine;
 
 /**
  * Class Page

@@ -13,8 +13,8 @@ use Packetery\Core\Api\Soap\Request\SenderGetReturnRouting;
 use Packetery\Core\Log;
 use Packetery\Module\FormFactory;
 use Packetery\Module\MessageManager;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Form;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Form;
 
 /**
  * Class Page
@@ -79,7 +79,7 @@ class Page {
 	/**
 	 * HTTP request.
 	 *
-	 * @var \PacketeryNette\Http\Request
+	 * @var \PacketeryVendor\Nette\Http\Request
 	 */
 	private $httpRequest;
 
@@ -92,9 +92,9 @@ class Page {
 	 * @param \Packetery\Core\Api\Soap\Client $packetaClient   Packeta Client.
 	 * @param Log\ILogger                     $logger          Logger.
 	 * @param MessageManager                  $messageManager  Message manager.
-	 * @param \PacketeryNette\Http\Request    $httpRequest     HTTP request.
+	 * @param \PacketeryVendor\Nette\Http\Request    $httpRequest     HTTP request.
 	 */
-	public function __construct( Engine $latte_engine, Provider $optionsProvider, FormFactory $formFactory, \Packetery\Core\Api\Soap\Client $packetaClient, Log\ILogger $logger, MessageManager $messageManager, \PacketeryNette\Http\Request $httpRequest ) {
+	public function __construct( Engine $latte_engine, Provider $optionsProvider, FormFactory $formFactory, \Packetery\Core\Api\Soap\Client $packetaClient, Log\ILogger $logger, MessageManager $messageManager, \PacketeryVendor\Nette\Http\Request $httpRequest ) {
 		$this->latte_engine    = $latte_engine;
 		$this->optionsProvider = $optionsProvider;
 		$this->formFactory     = $formFactory;

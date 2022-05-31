@@ -9,8 +9,8 @@ declare( strict_types=1 );
 
 namespace Packetery\Module\Order;
 
-use PacketeryLatte\Engine;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http\Request;
 use WC_Order;
 
 /**

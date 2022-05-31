@@ -9,7 +9,7 @@ declare( strict_types=1 );
 
 namespace Packetery\Module;
 
-use PacketeryNette\DI\Container;
+use PacketeryVendor\Nette\DI\Container;
 
 /**
  * Class CompatibilityBridge.

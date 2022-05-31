@@ -10,8 +10,8 @@ declare( strict_types=1 );
 namespace Packetery\Module\Carrier;
 
 use Packetery\Module\Checkout;
-use PacketeryLatte\Engine;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http\Request;
 
 /**
  * Class CountryListingPage

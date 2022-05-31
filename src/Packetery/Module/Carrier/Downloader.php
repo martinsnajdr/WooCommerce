@@ -10,9 +10,9 @@ declare( strict_types=1 );
 namespace Packetery\Module\Carrier;
 
 use Packetery\Module\Options\Provider;
-use PacketeryGuzzleHttp\Client;
-use PacketeryGuzzleHttp\Exception\GuzzleException;
-use PacketeryGuzzleHttp\PacketeryPsr7\Response;
+use PacketeryVendor\GuzzleHttp\Client;
+use PacketeryVendor\GuzzleHttp\Exception\GuzzleException;
+use PacketeryVendor\GuzzleHttp\PacketeryPsr7\Response;
 
 /**
  * Class Downloader

@@ -11,8 +11,8 @@ declare( strict_types=1 );
 namespace Packetery\Module\Order;
 
 use Packetery\Module\FormFactory;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Form;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Form;
 
 /**
  * Class Modal

@@ -15,8 +15,8 @@ use Packetery\Core\Api\Soap\Response;
 use Packetery\Module\EntityFactory;
 use Packetery\Module\MessageManager;
 use Packetery\Module\Plugin;
-use PacketeryLatte\Engine;
-use PacketeryNette\Http;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http;
 
 /**
  * Class LabelPrint.

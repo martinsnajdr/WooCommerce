@@ -11,8 +11,8 @@ namespace Packetery\Module;
 
 use Packetery\Core;
 use Packetery\Module\Options\Provider;
-use PacketeryLatte\Engine;
-use PacketeryNette\Http\Request;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Http\Request;
 
 /**
  * Class Checkout

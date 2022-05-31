@@ -17,9 +17,9 @@ use Packetery\Module\FormFactory;
 use Packetery\Module\MessageManager;
 use Packetery\Module\Options\Provider;
 use Packetery\Module\Plugin;
-use PacketeryLatte\Engine;
-use PacketeryNette\Forms\Form;
-use PacketeryNette\Http;
+use PacketeryVendor\Latte\Engine;
+use PacketeryVendor\Nette\Forms\Form;
+use PacketeryVendor\Nette\Http;
 
 /**
  * Class LabelPrint.
