@@ -11,6 +11,7 @@ namespace Packetery\Module\Carrier;
 
 use Packetery\Core\Entity;
 use Packetery\Module\EntityFactory;
+use Packetery\Module\ShippingZoneRepository;
 
 /**
  * Class CarrierRepository
@@ -447,6 +448,26 @@ class Repository {
 		}
 
 		return false === $this->hasPickupPoints( (int) $carrierId );
+	}
+
+	/**
+	 * Gets carriers available for specific shipping rate.
+	 *
+	 * @param string $rateId
+	 *
+	 * @return array
+	 */
+	public function getCarriersForShippingRate( string $rateId ): array {
+		$shippingZoneRepository   = new ShippingZoneRepository();
+		$countries                = $shippingZoneRepository->getCountryCodesForShippingRate( $rateId );
+		$availableCarriersToMerge = [];
+		if ( ! empty( $countries ) ) {
+			foreach ( $countries as $countryCode ) {
+				$availableCarriersToMerge[] = $this->getByCountryIncludingZpoints( $countryCode );
+			}
+		}
+
+		return array_merge( ...$availableCarriersToMerge );
 	}
 
 }

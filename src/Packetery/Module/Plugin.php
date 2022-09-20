@@ -705,7 +705,7 @@ class Plugin {
 		$isOrderGridPage   = $this->contextResolver->isOrderGridPage();
 		$isOrderDetailPage = $this->contextResolver->isOrderDetailPage();
 
-		if ( $isOrderGridPage || $isOrderDetailPage || in_array( $page, [ Carrier\OptionsPage::SLUG, Options\Page::SLUG ], true ) ) {
+		if ( $isOrderGridPage || $isOrderDetailPage || in_array( $page, [ Carrier\OptionsPage::SLUG, Options\Page::SLUG, ShippingMethod::SLUG_SETTINGS ], true ) ) {
 			$this->enqueueScript( 'live-form-validation-options', 'public/live-form-validation-options.js', false );
 			$this->enqueueScript( 'live-form-validation', 'public/libs/live-form-validation/live-form-validation.js', false, [ 'live-form-validation-options' ] );
 			$this->enqueueScript( 'live-form-validation-extension', 'public/live-form-validation-extension.js', false, [ 'live-form-validation' ] );
@@ -714,10 +714,21 @@ class Plugin {
 		if ( Carrier\OptionsPage::SLUG === $page ) {
 			$this->enqueueScript( 'packetery-admin-country-carrier', 'public/admin-country-carrier.js', true, [ 'jquery' ] );
 		}
+		/* // todo 999 optimalizovat JS
+		if ( $page === ShippingMethod::SLUG_SETTINGS ) ) {
+			$this->enqueueScript( 'packetery-admin-country-carrier', 'public/admin-country-carrier-modal.js', true, [ 'jquery' ] );
+		}
+		*/
 
 		$isProductDetailPage = $this->contextResolver->isProductDetailPage();
 
-		if ( $isOrderGridPage || $isOrderDetailPage || $isProductDetailPage || in_array( $page, [ Options\Page::SLUG, Carrier\OptionsPage::SLUG, Log\Page::SLUG, Order\labelPrint::MENU_SLUG ], true ) ) {
+		if ( $isOrderGridPage || $isOrderDetailPage || $isProductDetailPage || in_array( $page, [
+				Options\Page::SLUG,
+				Carrier\OptionsPage::SLUG,
+				Log\Page::SLUG,
+				Order\labelPrint::MENU_SLUG,
+				ShippingMethod::SLUG_SETTINGS,
+			], true ) ) {
 			$this->enqueueStyle( 'packetery-admin-styles', 'public/admin.css' );
 		}
 

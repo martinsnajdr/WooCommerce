@@ -275,6 +275,33 @@ class OptionsPage {
 	}
 
 	/**
+	 * Saves carrier options from modal.
+	 *
+	 * @param array $options Options.
+	 *
+	 * @return void
+	 */
+	public function updateOptionsModal( array $options ): void {
+		// todo 999 sjednotit s OptionsPage, pokud by zustalo oboji
+		$options = $this->mergeNewLimits( $options, 'weight_limits' );
+		$options = $this->sortLimits( $options, 'weight_limits', 'weight' );
+		$options = $this->mergeNewLimits( $options, 'surcharge_limits' );
+		$options = $this->sortLimits( $options, 'surcharge_limits', 'order_price' );
+
+		// todo 999 optimalizovat
+		$options['active'] = true;
+		unset( $options['packetery_shipping_method'], $options['instance_id'] );
+		foreach ( $options as $key => $value ) {
+			if ( strpos( $key, 'woocommerce_' ) === 0 ) {
+				unset( $options[ $key ] );
+			}
+		}
+
+		update_option( Checkout::CARRIER_PREFIX . $options['id'], $options );
+		// todo 999 message? __( 'Settings saved', 'packeta' )
+	}
+
+	/**
 	 *  Renders page.
 	 */
 	public function render(): void {
@@ -284,21 +311,7 @@ class OptionsPage {
 			$carriersData    = [];
 			$post            = $this->httpRequest->getPost();
 			foreach ( $countryCarriers as $carrier ) {
-				if ( ! empty( $post ) && $post['id'] === $carrier->getId() ) {
-					$formTemplate = $this->createFormTemplate( $post );
-					$form         = $this->createForm( $post );
-					if ( $form->isSubmitted() ) {
-						$form->fireEvents();
-					}
-				} else {
-					$carrierData = $carrier->__toArray();
-					$options     = get_option( Checkout::CARRIER_PREFIX . $carrier->getId() );
-					if ( false !== $options ) {
-						$carrierData += $options;
-					}
-					$formTemplate = $this->createFormTemplate( $carrierData );
-					$form         = $this->createForm( $carrierData );
-				}
+				[ $formTemplate, $form ] = $this->getCarrierTemplateData( $post, $carrier );
 
 				$carriersData[] = [
 					'form'         => $form,
@@ -471,5 +484,31 @@ class OptionsPage {
 			$params,
 			admin_url( 'admin.php' )
 		);
+	}
+
+	/**
+	 * @param ?array $post
+	 * @param \Packetery\Core\Entity\Carrier $carrier
+	 *
+	 * @return array
+	 */
+	public function getCarrierTemplateData( ?array $post, \Packetery\Core\Entity\Carrier $carrier ): array {
+		if ( ! empty( $post ) && isset($post['id']) && $post['id'] === $carrier->getId() ) {
+			$formTemplate = $this->createFormTemplate( $post );
+			$form         = $this->createForm( $post );
+			if ( $form->isSubmitted() ) {
+				$form->fireEvents();
+			}
+		} else {
+			$carrierData = $carrier->__toArray();
+			$options     = get_option( Checkout::CARRIER_PREFIX . $carrier->getId() );
+			if ( false !== $options ) {
+				$carrierData += $options;
+			}
+			$formTemplate = $this->createFormTemplate( $carrierData );
+			$form         = $this->createForm( $carrierData );
+		}
+
+		return array( $formTemplate, $form );
 	}
 }

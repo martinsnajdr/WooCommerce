@@ -132,7 +132,7 @@ class Options {
 	 * @return bool
 	 */
 	public function isActive(): bool {
-		return $this->options['active'] ?? false;
+		return isset($this->options['active']) ? (bool)$this->options['active'] : false;
 	}
 
 	/**
