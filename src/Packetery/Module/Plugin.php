@@ -10,8 +10,6 @@ declare( strict_types=1 );
 namespace Packetery\Module;
 
 use Packetery\Core\Log\ILogger;
-use Packetery\Core\Log\Record;
-use Packetery\Module\Carrier\Downloader;
 use Packetery\Module\Carrier\OptionsPage;
 use Packetery\Module\Carrier\Repository;
 use Packetery\Module\Log;
@@ -248,6 +246,13 @@ class Plugin {
 	private $contextResolver;
 
 	/**
+	 *  Order builder.
+	 *
+	 * @var Order\Builder
+	 */
+	private $builder;
+
+	/**
 	 * Plugin constructor.
 	 *
 	 * @param Order\Metabox            $order_metabox        Order metabox.
@@ -279,6 +284,7 @@ class Plugin {
 	 * @param Order\PacketCanceller    $packetCanceller      Packet canceller.
 	 * @param ContextResolver          $contextResolver      Context resolver.
 	 * @param DashboardWidget          $dashboardWidget      Dashboard widget.
+	 * @param Order\Builder            $builder              Order builder.
 	 */
 	public function __construct(
 		Order\Metabox $order_metabox,
@@ -309,7 +315,8 @@ class Plugin {
 		CronService $cronService,
 		Order\PacketCanceller $packetCanceller,
 		ContextResolver $contextResolver,
-		DashboardWidget $dashboardWidget
+		DashboardWidget $dashboardWidget,
+		Order\Builder $builder
 	) {
 		$this->options_page         = $options_page;
 		$this->latte_engine         = $latte_engine;
@@ -341,6 +348,7 @@ class Plugin {
 		$this->packetCanceller      = $packetCanceller;
 		$this->contextResolver      = $contextResolver;
 		$this->dashboardWidget      = $dashboardWidget;
+		$this->builder              = $builder;
 	}
 
 	/**
@@ -431,6 +439,9 @@ class Plugin {
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', [ $this, 'transformGetOrdersQuery' ] );
 
 		add_action( 'deleted_post', [ $this->orderRepository, 'deletedPostHook' ], 10, 2 );
+
+		add_action( 'woocommerce_saved_order_items', [ $this, 'afterSaveOrderItems' ] );
+		add_action( 'wp_ajax_packetery_update_metabox_values', [ $this, 'sendMetaboxValuesAsJson' ] );
 		$this->dashboardWidget->register();
 	}
 
@@ -727,6 +738,7 @@ class Plugin {
 
 		if ( $isOrderDetailPage ) {
 			$this->enqueueScript( 'packetery-admin-pickup-point-picker', 'public/admin-pickup-point-picker.js', false, [ 'jquery' ] );
+			$this->enqueueScript( 'packetery-admin-order-detail-recalc', 'public/admin-order-detail-recalc.js', true, [ 'jquery' ] );
 		}
 
 		if ( $this->contextResolver->isPacketeryConfirmPage() ) {
@@ -894,5 +906,49 @@ class Plugin {
 	 */
 	public static function getAppIdentity(): string {
 		return 'Woocommerce: ' . get_bloginfo( 'version' ) . ', WordPress: ' . WC_VERSION . ', plugin Packeta: ' . self::VERSION;
+	}
+
+	/**
+	 * Updates order attributes, when cart items change.
+	 *
+	 * @return void
+	 */
+	public function afterSaveOrderItems(): void {
+		check_admin_referer();
+
+		if ( ! isset( $_REQUEST['order_id'] ) ) {
+			return;
+		}
+		$order_id = (int) $_REQUEST['order_id'];
+		$wcOrder  = wc_get_order( $order_id );
+		if ( ! $wcOrder ) {
+			return;
+		}
+		$order = $this->orderRepository->getByWcOrder( $wcOrder );
+		if ( null !== $order ) {
+			$order = $this->builder->updateWeightWithCalculated( $wcOrder, $order );
+			// $order->setCod( 13.75 ); TODO: set Cod to new calculated value
+			$this->orderRepository->save( $order );
+		}
+	}
+
+	/**
+	 * Sends values for Metabox form as JSON.
+	 *
+	 * @return void
+	 */
+	public function sendMetaboxValuesAsJson(): void {
+
+		check_admin_referer();
+		if ( ! isset( $_REQUEST['orderId'] ) ) {
+			wp_die();
+		}
+
+		$orderId = (int) $_REQUEST['orderId'];
+		if ( 0 !== $orderId ) {
+			$data = $this->order_metabox->getFormDefaults( $this->orderRepository->getById( $orderId ) );
+			echo wp_json_encode( $data );
+		}
+		wp_die();
 	}
 }

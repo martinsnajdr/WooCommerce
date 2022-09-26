@@ -156,4 +156,21 @@ class Builder {
 		return false;
 	}
 
+	/**
+	 * Updates Order weight with calculated weight of items.
+	 *
+	 * @param WC_Order     $wcOrder WC Order.
+	 * @param Entity\Order $order Order.
+	 *
+	 * @return Entity\Order|null
+	 */
+	public function updateWeightWithCalculated( WC_Order $wcOrder, Entity\Order $order ): ?Entity\Order {
+		$calculatedWeight = $this->calculator->calculateOrderWeight( $wcOrder );
+
+		$order->setWeight( $calculatedWeight );
+
+		$order->setCalculatedWeight( $calculatedWeight );
+
+		return $order;
+	}
 }

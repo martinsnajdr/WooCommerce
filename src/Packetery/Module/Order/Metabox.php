@@ -252,18 +252,7 @@ class Metabox {
 			return;
 		}
 
-		$this->order_form->setDefaults(
-			[
-				'packetery_order_metabox_nonce' => wp_create_nonce(),
-				self::FIELD_WEIGHT              => $order->getWeight(),
-				self::FIELD_WIDTH               => $order->getWidth(),
-				self::FIELD_LENGTH              => $order->getLength(),
-				self::FIELD_HEIGHT              => $order->getHeight(),
-				self::FIELD_ADULT_CONTENT       => $order->containsAdultContent(),
-				self::FIELD_COD                 => $order->getCod(),
-				self::FIELD_VALUE               => $order->getValue(),
-			]
-		);
+		$this->order_form->setDefaults( $this->getFormDefaults( $order ) );
 
 		$prev_invalid_values = get_transient( 'packetery_metabox_nette_form_prev_invalid_values' );
 		if ( $prev_invalid_values ) {
@@ -394,5 +383,25 @@ class Metabox {
 		$this->orderRepository->save( $order );
 
 		return $orderId;
+	}
+
+	/**
+	 * Returns default values for metabox form for given order.
+	 *
+	 * @param Core\Entity\Order $order Order.
+	 *
+	 * @return array
+	 */
+	public function getFormDefaults( Core\Entity\Order $order ): array {
+		return [
+			'packetery_order_metabox_nonce' => wp_create_nonce(),
+			self::FIELD_WEIGHT              => $order->getWeight(),
+			self::FIELD_WIDTH               => $order->getWidth(),
+			self::FIELD_LENGTH              => $order->getLength(),
+			self::FIELD_HEIGHT              => $order->getHeight(),
+			self::FIELD_ADULT_CONTENT       => $order->containsAdultContent(),
+			self::FIELD_COD                 => $order->getCod(),
+			self::FIELD_VALUE               => $order->getValue(),
+		];
 	}
 }
