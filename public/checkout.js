@@ -79,13 +79,25 @@ var packeteryLoadCheckout = function( $, settings ) {
 		};
 
 		var loadInfoForCarrierRate = function( carrierRateId, attrs ) {
+			var changeHappened = false;
+
 			for ( var attributeKey in attrs ) {
 				if ( !attrs.hasOwnProperty( attributeKey ) ) {
 					continue;
 				}
 
 				var attribute = attrs[ attributeKey ].name;
-				$( '#' + attribute ).val( getRateAttrValue( carrierRateId, attribute, '' ) );
+				var newVal = getRateAttrValue( carrierRateId, attribute, '' );
+
+				if ( $( '#' + attribute ).val() !== newVal ) {
+					changeHappened = true;
+				}
+
+				$( '#' + attribute ).val( newVal );
+			}
+
+			if ( changeHappened ) {
+				jQuery('body').trigger('update_checkout');
 			}
 		};
 
@@ -118,8 +130,6 @@ var packeteryLoadCheckout = function( $, settings ) {
 				var attribute = attrs[ attributeKey ].name;
 				$( '#' + attribute ).val( '' );
 			}
-
-			$widgetDiv.find( '.packeta-widget-info' ).html( '' );
 		};
 
 		var getAddressValidation = function( carrierRateId ) {
@@ -151,11 +161,11 @@ var packeteryLoadCheckout = function( $, settings ) {
 			$( '.packeta-widget' ).addClass( 'packetery-hidden' );
 			var $widgetButtonRow = $( '.packetery-widget-button-table-row' );
 			$widgetButtonRow.addClass( 'packetery-hidden' );
-			resetInfo( settings.pickupPointAttrs ); // clear active hidden field values
-			resetInfo( settings.homeDeliveryAttrs );
 			resetWidgetInfo();
 
 			if ( !hasCarrierConfig( carrierRateId ) ) {
+				resetInfo( settings.pickupPointAttrs );
+				resetInfo( settings.homeDeliveryAttrs );
 				return;
 			}
 
@@ -168,9 +178,12 @@ var packeteryLoadCheckout = function( $, settings ) {
 				$widgetDiv.find( 'button' ).html( settings.translations.choosePickupPoint );
 				$widgetButtonRow.removeClass( 'packetery-hidden' );
 				$widgetDiv.removeClass( 'packetery-hidden' );
+			} else {
+				resetInfo( settings.pickupPointAttrs );
 			}
 
 			if ( _hasHomeDelivery && 'none' === getAddressValidation( carrierRateId ) ) {
+				resetInfo( settings.homeDeliveryAttrs );
 				return;
 			}
 
@@ -180,6 +193,8 @@ var packeteryLoadCheckout = function( $, settings ) {
 				$widgetDiv.find( 'button' ).html( settings.translations.chooseAddress );
 				$widgetButtonRow.removeClass( 'packetery-hidden' );
 				$widgetDiv.removeClass( 'packetery-hidden' );
+			} else {
+				resetInfo( settings.homeDeliveryAttrs );
 			}
 		};
 
@@ -312,6 +327,7 @@ var packeteryLoadCheckout = function( $, settings ) {
 
 					fillHiddenFields( carrierRateId, settings.pickupPointAttrs, pickupPoint );
 					$widgetDiv.find( '.packeta-widget-info' ).html( pickupPoint.name );
+					jQuery('body').trigger('update_checkout');
 				}, widgetOptions );
 			}
 		} );

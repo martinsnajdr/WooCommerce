@@ -580,6 +580,24 @@ class Checkout {
 				}
 			}
 		);
+		add_filter( 'woocommerce_available_payment_gateways', function ($availableGateways) {
+			if ( is_checkout() && isset($_POST['post_data']) ) {
+				$formDataString = $_POST['post_data'];
+				$formData = [];
+
+				parse_str($formDataString, $formData);
+
+				if ( isset($formData['packetery_point_name']) && 'Z-BOX' === $formData['packetery_point_place'] ) {
+					foreach ($availableGateways as $key => &$available_gateway) {
+						if ( $key === $this->options_provider->getCodPaymentMethod() ) {
+							unset($availableGateways[$key]);
+						}
+					}
+				}
+			}
+
+			return $availableGateways;
+		} );
 	}
 
 	/**
