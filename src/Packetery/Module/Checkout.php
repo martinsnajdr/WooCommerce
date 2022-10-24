@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Packetery\Module;
 
 use Packetery\Core;
+use Packetery\Module\Carrier\OptionsPage;
 use Packetery\Module\Options\Provider;
 use PacketeryLatte\Engine;
 use PacketeryNette\Http\Request;
@@ -729,6 +730,13 @@ class Checkout {
 			if ( true === $options['active'] ) {
 				$cost = $this->getRateCost( $options, $cartPrice, $cartWeight );
 				if ( null !== $cost ) {
+					if (
+						isset( $options['maximum_cod_value'] ) &&
+						$options['maximum_cod_value'] >= OptionsPage::MINIMAL_MAXIMUM_COD &&
+						( $cartPrice + $cost ) > $options['maximum_cod_value']
+					) {
+						continue;
+					}
 					$customRates[ $optionId ] = $this->createShippingRate( $options['name'], $optionId, (float) $cost );
 				}
 			}

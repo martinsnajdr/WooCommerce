@@ -3,7 +3,7 @@ Contributors: packeta
 Tags: WooCommerce, shipping
 Requires at least: 5.3
 Tested up to: 6.0
-Stable tag: 1.4
+Stable tag: 1.4.1
 Requires PHP: 7.2
 WC requires at least: 4.5
 WC tested up to: 6.5.1
@@ -61,6 +61,9 @@ We are constantly working on adding new features. You can find a list of feature
 Please contact us at technicka.podpora@zasilkovna.cz .
 
 == Changelog ==
+= 1.4.1 =
+Added: New setting of a carrier: "Maximum COD value"
+
 = 1.4 =
 Fixed: Performance optimization for loading the list of orders
 Fixed: Label print edge case error

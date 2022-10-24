@@ -27,8 +27,9 @@ use PacketeryNette\Http\Request;
  */
 class OptionsPage {
 
-	public const FORM_FIELD_NAME = 'name';
-	public const SLUG            = 'packeta-country';
+	public const FORM_FIELD_NAME     = 'name';
+	public const SLUG                = 'packeta-country';
+	public const MINIMAL_MAXIMUM_COD = 0.1;
 
 	/**
 	 * PacketeryLatte_engine.
@@ -187,6 +188,11 @@ class OptionsPage {
 		];
 		$form->addSelect( 'cod_rounding', __( 'COD rounding', 'packeta' ) . ':', $roundingOptions )
 			->setDefaultValue( Rounder::DONT_ROUND );
+
+		$form->addText( 'maximum_cod_value', __( 'Maximum COD value', 'packeta' ) . ':' )
+			->setRequired( false )
+			->addRule( Form::FLOAT )
+			->addRule( Form::MIN, null, self::MINIMAL_MAXIMUM_COD );
 
 		$form->onValidate[] = [ $this, 'validateOptions' ];
 		$form->onSuccess[]  = [ $this, 'updateOptions' ];
