@@ -192,7 +192,7 @@ class OptionsPage {
 			->setRequired( false )
 			->addRule( Form::FLOAT )
 			->addFilter(
-				function ( float $value ) {
+				static function ( float $value ) {
 					return Helper::simplifyFloat( $value, 2 );
 				}
 			)
