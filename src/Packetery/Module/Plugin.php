@@ -496,7 +496,7 @@ class Plugin {
 			return;
 		}
 
-		$carrierId      = $orderEntity->getCarrierId();
+		$carrierId      = $orderEntity->getCarrier()->getId();
 		$carrierOptions = Carrier\Options::createByCarrierId( $carrierId );
 
 		$this->latte_engine->render(

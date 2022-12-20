@@ -264,7 +264,7 @@ class GridExtender {
 					}
 					break;
 				}
-				$homeDeliveryCarrier = $this->carrierRepository->getById( (int) $order->getCarrierId() );
+				$homeDeliveryCarrier = $this->carrierRepository->getById( (int) $order->getCarrier()->getId() );
 				if ( $homeDeliveryCarrier ) {
 					$homeDeliveryCarrierEntity = new Carrier\Entity( $homeDeliveryCarrier );
 					echo esc_html( $homeDeliveryCarrierEntity->getFinalName() );

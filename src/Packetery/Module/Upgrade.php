@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Packetery\Module;
 
 use Packetery\Core;
+use Packetery\Core\Entity;
 use Packetery\Core\Log\ILogger;
 use Packetery\Core\Log\Record;
 use Packetery\Module\Upgrade\Version_1_4_2;
@@ -243,9 +244,13 @@ class Upgrade {
 		);
 
 		foreach ( $orders as $order ) {
+			$carrierId   = $this->carrierRepository->getFixedCarrierId(
+				$this->getMetaAsNullableString( $order, self::META_CARRIER_ID ),
+				strtolower( $order->get_shipping_country() )
+			);
 			$orderEntity = new Core\Entity\Order(
 				(string) $order->get_id(),
-				$this->getMetaAsNullableString( $order, self::META_CARRIER_ID )
+				$this->carrierRepository->getAnyById( $carrierId )
 			);
 			$order->delete_meta_data( self::META_CARRIER_ID );
 

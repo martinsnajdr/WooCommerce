@@ -11,6 +11,7 @@ namespace Packetery\Module\Order;
 
 use Packetery\Core;
 use Packetery\Core\Helper;
+use Packetery\Core\Entity;
 use Packetery\Module\Checkout;
 use Packetery\Module\FormFactory;
 use Packetery\Module\FormValidators;
@@ -378,7 +379,11 @@ class Metabox {
 				$value = $values[ $pickupPointAttr['name'] ];
 
 				if ( Checkout::ATTR_CARRIER_ID === $pickupPointAttr['name'] ) {
-					$value = ( ! empty( $values[ Checkout::ATTR_CARRIER_ID ] ) ? $values[ Checkout::ATTR_CARRIER_ID ] : \Packetery\Module\Carrier\Repository::INTERNAL_PICKUP_POINTS_ID );
+					if ( ! empty( $values[ Checkout::ATTR_CARRIER_ID ] ) ) {
+						$value = $values[ Checkout::ATTR_CARRIER_ID ];
+					} else {
+						$value = Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX . strtolower( $wcOrder->get_shipping_country() );
+					}
 				}
 
 				$propsToSave[ $pickupPointAttr['name'] ] = $value;
@@ -456,7 +461,7 @@ class Metabox {
 			'language'    => substr( get_user_locale(), 0, 2 ),
 			'appIdentity' => Plugin::getAppIdentity(),
 			'weight'      => $order->getFinalWeight(),
-			'carriers'    => Checkout::getWidgetCarriersParam( $order->isPickupPointDelivery(), $order->getCarrierId() ),
+			'carriers'    => Checkout::getWidgetCarriersParam( $order->isPickupPointDelivery(), $order->getCarrier()->getId() ),
 		];
 
 		if ( $order->containsAdultContent() ) {
@@ -502,8 +507,7 @@ class Metabox {
 			$widgetOptions += [ 'county' => $deliveryAddress->getCounty() ];
 		}
 
-		// TODO: Redo in carrier refactor.
-		if ( $order->getCarrier() && is_numeric( $order->getCarrier()->getId() ) ) {
+		if ( is_numeric( $order->getCarrier()->getId() ) ) {
 			$widgetOptions += [ 'carrierId' => $order->getCarrier()->getId() ];
 		}
 

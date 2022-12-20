@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Packetery\Module\Carrier;
 
 use Packetery\Core\Entity;
+use Packetery\Core\Helper;
 use Packetery\Module\EntityFactory;
 use Packetery\Module\WpdbAdapter;
 
@@ -20,8 +21,6 @@ use Packetery\Module\WpdbAdapter;
  * @package Packetery
  */
 class Repository {
-
-	public const INTERNAL_PICKUP_POINTS_ID = 'packeta';
 
 	private const COLUMN_NAMES = [
 		'id',
@@ -406,7 +405,7 @@ class Repository {
 	 * @return bool
 	 */
 	public function isPickupPointCarrier( string $carrierId ): bool {
-		if ( self::INTERNAL_PICKUP_POINTS_ID === $carrierId ) {
+		if ( Helper::isInternalPickupPointCarrier( $carrierId ) ) {
 			return true;
 		}
 
@@ -421,7 +420,7 @@ class Repository {
 	 * @return bool
 	 */
 	public function isHomeDeliveryCarrier( string $carrierId ): bool {
-		if ( self::INTERNAL_PICKUP_POINTS_ID === $carrierId ) {
+		if ( Helper::isInternalPickupPointCarrier( $carrierId ) ) {
 			return false;
 		}
 
@@ -466,6 +465,21 @@ class Repository {
 		}
 
 		return Options::createByCarrierId( $carrier->getId() )->isActive();
+	}
+
+	/**
+	 * Changes previously used identifier packteta to zpoint type id.
+	 *
+	 * @param string $carrierId Carrier id.
+	 * @param string $country Lowercase country.
+	 *
+	 * @return string
+	 */
+	public function getFixedCarrierId( string $carrierId, string $country ): string {
+		if ( Entity\Carrier::INTERNAL_PICKUP_POINTS_ID === $carrierId ) {
+			return $this->getZpointCarrierIdByCountry( $country );
+		}
+		return $carrierId;
 	}
 
 }

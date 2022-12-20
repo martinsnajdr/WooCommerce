@@ -12,7 +12,6 @@ namespace Packetery\Module\Order;
 use Packetery\Core\Entity;
 use Packetery\Core\Entity\Address;
 use Packetery\Module\Calculator;
-use Packetery\Module\Carrier;
 use Packetery\Module\Options\Provider;
 use Packetery\Module\Product;
 use WC_Order;
@@ -32,13 +31,6 @@ class Builder {
 	private $optionsProvider;
 
 	/**
-	 * Carrier repository.
-	 *
-	 * @var Carrier\Repository Carrier repository.
-	 */
-	private $carrierRepository;
-
-	/**
 	 * Weight calculator.
 	 *
 	 * @var Calculator
@@ -48,18 +40,15 @@ class Builder {
 	/**
 	 * Order constructor.
 	 *
-	 * @param Provider           $optionsProvider Options Provider.
-	 * @param Carrier\Repository $carrierRepository Carrier repository.
-	 * @param Calculator         $calculator Weight calculator.
+	 * @param Provider   $optionsProvider Options Provider.
+	 * @param Calculator $calculator Weight calculator.
 	 */
 	public function __construct(
 		Provider $optionsProvider,
-		Carrier\Repository $carrierRepository,
 		Calculator $calculator
 	) {
-		$this->optionsProvider   = $optionsProvider;
-		$this->carrierRepository = $carrierRepository;
-		$this->calculator        = $calculator;
+		$this->optionsProvider = $optionsProvider;
+		$this->calculator      = $calculator;
 	}
 
 	/**
@@ -120,14 +109,6 @@ class Builder {
 		}
 
 		$order->setSize( $order->getSize() );
-
-		if ( $order->isExternalCarrier() ) {
-			$carrier = $this->carrierRepository->getById( (int) $order->getCarrierId() );
-			$order->setCarrier( $carrier );
-			$order->setCarrierCode( $order->getCarrierId() );
-		} else {
-			$order->setCarrierCode( $this->carrierRepository->getZpointCarrierIdByCountry( $order->getShippingCountry() ) );
-		}
 
 		$order->setCurrency( $wcOrder->get_currency() );
 

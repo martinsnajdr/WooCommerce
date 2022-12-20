@@ -311,7 +311,7 @@ class PacketSubmitter {
 
 		$createPacketData = $this->createPacketMapper->fromOrderToArray( $order );
 		if ( ! empty( $createPacketData['cod'] ) ) {
-			$roundingType            = Options::createByCarrierId( $order->getCarrierCode() )->getCodRoundingType();
+			$roundingType            = Options::createByCarrierId( $order->getCarrier()->getId() )->getCodRoundingType();
 			$roundedCod              = Rounder::roundByCurrency( $createPacketData['cod'], $createPacketData['currency'], $roundingType );
 			$createPacketData['cod'] = $roundedCod;
 		}

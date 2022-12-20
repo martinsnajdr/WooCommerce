@@ -11,6 +11,7 @@ namespace Packetery\Module;
 
 use Packetery\Core;
 use Packetery\Core\Api\Rest\PickupPointValidateRequest;
+use Packetery\Core\Entity;
 use Packetery\Module\Options\Provider;
 use Packetery\Module\Order\PickupPointValidator;
 use PacketeryLatte\Engine;
@@ -296,7 +297,7 @@ class Checkout {
 	 */
 	public static function getWidgetCarriersParam( bool $isPickupPoints, string $carrierId ): ?string {
 		if ( $isPickupPoints ) {
-			return ( is_numeric( $carrierId ) ? $carrierId : Carrier\Repository::INTERNAL_PICKUP_POINTS_ID );
+			return ( is_numeric( $carrierId ) ? $carrierId : Entity\Carrier::INTERNAL_PICKUP_POINTS_ID );
 		}
 
 		return null;
@@ -522,7 +523,7 @@ class Checkout {
 
 				$saveMeta = true;
 				if (
-					( self::ATTR_CARRIER_ID === $attrName && ! $attrValue ) ||
+					self::ATTR_CARRIER_ID === $attrName ||
 					( self::ATTR_POINT_URL === $attrName && ! filter_var( $attrValue, FILTER_VALIDATE_URL ) )
 				) {
 					$saveMeta = false;
@@ -538,7 +539,7 @@ class Checkout {
 			$wcOrder->save();
 		}
 
-		$orderEntity = new Core\Entity\Order( (string) $orderId, $carrierId );
+		$orderEntity = new Core\Entity\Order( (string) $orderId, $this->carrierRepository->getAnyById( $carrierId ) );
 		if (
 			isset( $post[ self::$homeDeliveryAttrs['isValidated']['name'] ] ) &&
 			'1' === $post[ self::$homeDeliveryAttrs['isValidated']['name'] ] &&
@@ -583,9 +584,6 @@ class Checkout {
 
 		foreach ( $propsToSave as $attrName => $attrValue ) {
 			switch ( $attrName ) {
-				case self::ATTR_CARRIER_ID:
-					$orderEntity->setCarrierId( $attrValue );
-					break;
 				case self::ATTR_POINT_ID:
 					$orderEntityPickupPoint->setId( $attrValue );
 					break;
@@ -930,10 +928,6 @@ class Checkout {
 		$branchServiceId = $this->getExtendedBranchServiceId( $chosenMethod );
 		if ( null === $branchServiceId ) {
 			return null;
-		}
-
-		if ( strpos( $branchServiceId, 'zpoint' ) === 0 ) {
-			return Carrier\Repository::INTERNAL_PICKUP_POINTS_ID;
 		}
 
 		return $branchServiceId;

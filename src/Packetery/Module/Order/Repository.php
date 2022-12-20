@@ -10,6 +10,7 @@ declare( strict_types=1 );
 namespace Packetery\Module\Order;
 
 use Packetery\Core\Helper;
+use Packetery\Core\Entity;
 use Packetery\Core\Entity\Order;
 use Packetery\Core\Entity\PickupPoint;
 use Packetery\Core\Entity\Size;
@@ -48,16 +49,30 @@ class Repository {
 	private $helper;
 
 	/**
+	 * Carrier repository.
+	 *
+	 * @var Carrier\Repository
+	 */
+	private $carrierRepository;
+
+	/**
 	 * Repository constructor.
 	 *
-	 * @param WpdbAdapter $wpdbAdapter  WpdbAdapter.
-	 * @param Builder     $orderFactory Order factory.
-	 * @param Helper      $helper       Helper.
+	 * @param WpdbAdapter        $wpdbAdapter       WpdbAdapter.
+	 * @param Builder            $orderFactory      Order factory.
+	 * @param Helper             $helper            Helper.
+	 * @param Carrier\Repository $carrierRepository Carrier repository.
 	 */
-	public function __construct( WpdbAdapter $wpdbAdapter, Builder $orderFactory, Helper $helper ) {
-		$this->wpdbAdapter = $wpdbAdapter;
-		$this->builder     = $orderFactory;
-		$this->helper      = $helper;
+	public function __construct(
+		WpdbAdapter $wpdbAdapter,
+		Builder $orderFactory,
+		Helper $helper,
+		Carrier\Repository $carrierRepository
+	) {
+		$this->wpdbAdapter       = $wpdbAdapter;
+		$this->builder           = $orderFactory;
+		$this->helper            = $helper;
+		$this->carrierRepository = $carrierRepository;
 	}
 
 	/**
@@ -133,10 +148,12 @@ class Repository {
 				$this->applyCustomFilters( $clauses, $queryObject, $paramValues );
 			}
 			if ( $paramValues['packetery_order_type'] ) {
-				if ( Carrier\Repository::INTERNAL_PICKUP_POINTS_ID === $paramValues['packetery_order_type'] ) {
-					$clauses['where'] .= ' AND `' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` = "' . esc_sql( Carrier\Repository::INTERNAL_PICKUP_POINTS_ID ) . '"';
+				if ( Entity\Carrier::INTERNAL_PICKUP_POINTS_ID === $paramValues['packetery_order_type'] ) {
+					$clauses['where'] .= ' AND (`' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` = "' . esc_sql( Entity\Carrier::INTERNAL_PICKUP_POINTS_ID ) . '"' .
+						' OR `' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` LIKE "' . esc_sql( Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX ) . '%")';
 				} else {
-					$clauses['where'] .= ' AND `' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` != "' . esc_sql( Carrier\Repository::INTERNAL_PICKUP_POINTS_ID ) . '"';
+					$clauses['where'] .= ' AND `' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` != "' . esc_sql( Entity\Carrier::INTERNAL_PICKUP_POINTS_ID ) . '"';
+					$clauses['where'] .= ' AND `' . $this->wpdbAdapter->packetery_order . '`.`carrier_id` NOT LIKE "' . esc_sql( Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX ) . '%"';
 				}
 				$this->applyCustomFilters( $clauses, $queryObject, $paramValues );
 			}
@@ -230,21 +247,23 @@ class Repository {
 			return null;
 		}
 
-		$partialOrder = $this->createPartialOrder( $result );
+		$partialOrder = $this->createPartialOrder( $result, strtolower( $wcOrder->get_shipping_country() ) );
 		return $this->builder->finalize( $wcOrder, $partialOrder );
 	}
 
 	/**
 	 * Creates partial order.
 	 *
-	 * @param \stdClass $result DB result.
+	 * @param \stdClass $result  DB result.
+	 * @param string    $country Lowercase country.
 	 *
 	 * @return Order
 	 */
-	private function createPartialOrder( \stdClass $result ): Order {
+	private function createPartialOrder( \stdClass $result, string $country ): Order {
+		$carrierId    = $this->carrierRepository->getFixedCarrierId( $result->carrier_id, $country );
 		$partialOrder = new Order(
 			$result->id,
-			$result->carrier_id
+			$this->carrierRepository->getAnyById( $carrierId )
 		);
 
 		$orderWeight = $this->parseFloat( $result->weight );
@@ -360,7 +379,7 @@ class Repository {
 
 		$data = [
 			'id'                => (int) $order->getNumber(),
-			'carrier_id'        => $order->getCarrierId(),
+			'carrier_id'        => $order->getCarrier()->getId(),
 			'is_exported'       => (int) $order->isExported(),
 			'packet_id'         => $order->getPacketId(),
 			'packet_status'     => $order->getPacketStatus(),
@@ -511,7 +530,7 @@ class Repository {
 				continue;
 			}
 
-			$partial = $this->createPartialOrder( $row );
+			$partial = $this->createPartialOrder( $row, strtolower( $wcOrder->get_shipping_country() ) );
 			yield $this->builder->finalize( $wcOrder, $partial );
 		}
 	}

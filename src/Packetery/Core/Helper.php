@@ -93,4 +93,17 @@ class Helper {
 	public function getDateTimeFromString( ?string $date ): ?DateTimeImmutable {
 		return $date ? new DateTimeImmutable( $date ) : null;
 	}
+
+	/**
+	 * Checks if provided carrier id is internal pickup point carrier id. Handles old 'packeta' value.
+	 *
+	 * @param string $carrierId Carrier id.
+	 *
+	 * @return bool
+	 */
+	public static function isInternalPickupPointCarrier( string $carrierId ): bool {
+		return ( Entity\Carrier::INTERNAL_PICKUP_POINTS_ID === $carrierId ||
+				strpos( $carrierId, Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX ) === 0 );
+	}
+
 }
