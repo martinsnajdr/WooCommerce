@@ -468,7 +468,7 @@ class Repository {
 	}
 
 	/**
-	 * Changes previously used identifier packteta to zpoint type id.
+	 * Changes previously used identifier 'packeta' to zpoint type id.
 	 *
 	 * @param string $carrierId Carrier id.
 	 * @param string $country Lowercase country.
