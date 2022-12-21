@@ -347,9 +347,9 @@ class Metabox {
 			return $orderId;
 		}
 
-		$values = $this->order_form->getValues( 'array' );
+		$orderFormValues = $this->order_form->getValues( 'array' );
 
-		if ( ! wp_verify_nonce( $values['packetery_order_metabox_nonce'] ) ) {
+		if ( ! wp_verify_nonce( $orderFormValues['packetery_order_metabox_nonce'] ) ) {
 			$this->message_manager->flash_message( __( 'Session has expired! Please try again.', 'packeta' ), MessageManager::TYPE_ERROR );
 
 			return $orderId;
@@ -362,49 +362,49 @@ class Metabox {
 		}
 
 		$propsToSave = [
-			self::FIELD_WIDTH  => ( is_numeric( $values[ self::FIELD_WIDTH ] ) ? (float) number_format( $values[ self::FIELD_WIDTH ], 0, '.', '' ) : null ),
-			self::FIELD_LENGTH => ( is_numeric( $values[ self::FIELD_LENGTH ] ) ? (float) number_format( $values[ self::FIELD_LENGTH ], 0, '.', '' ) : null ),
-			self::FIELD_HEIGHT => ( is_numeric( $values[ self::FIELD_HEIGHT ] ) ? (float) number_format( $values[ self::FIELD_HEIGHT ], 0, '.', '' ) : null ),
+			self::FIELD_WIDTH  => ( is_numeric( $orderFormValues[ self::FIELD_WIDTH ] ) ? (float) number_format( $orderFormValues[ self::FIELD_WIDTH ], 0, '.', '' ) : null ),
+			self::FIELD_LENGTH => ( is_numeric( $orderFormValues[ self::FIELD_LENGTH ] ) ? (float) number_format( $orderFormValues[ self::FIELD_LENGTH ], 0, '.', '' ) : null ),
+			self::FIELD_HEIGHT => ( is_numeric( $orderFormValues[ self::FIELD_HEIGHT ] ) ? (float) number_format( $orderFormValues[ self::FIELD_HEIGHT ], 0, '.', '' ) : null ),
 		];
 
-		if ( ! is_numeric( $values[ self::FIELD_WEIGHT ] ) ) {
+		if ( ! is_numeric( $orderFormValues[ self::FIELD_WEIGHT ] ) ) {
 			$propsToSave[ self::FIELD_WEIGHT ] = null;
-		} elseif ( (float) $values[ self::FIELD_WEIGHT ] !== (float) $values[ self::FIELD_ORIGINAL_WEIGHT ] ) {
-			$propsToSave[ self::FIELD_WEIGHT ] = (float) $values[ self::FIELD_WEIGHT ];
+		} elseif ( (float) $orderFormValues[ self::FIELD_WEIGHT ] !== (float) $orderFormValues[ self::FIELD_ORIGINAL_WEIGHT ] ) {
+			$propsToSave[ self::FIELD_WEIGHT ] = (float) $orderFormValues[ self::FIELD_WEIGHT ];
 		}
 
-		if ( $values[ Checkout::ATTR_POINT_ID ] && $order->isPickupPointDelivery() ) {
+		if ( $orderFormValues[ Checkout::ATTR_POINT_ID ] && $order->isPickupPointDelivery() ) {
 			$wcOrder = wc_get_order( $orderId ); // Can not be false due condition at the beginning of method.
 			foreach ( Checkout::$pickupPointAttrs as $pickupPointAttr ) {
-				$value = $values[ $pickupPointAttr['name'] ];
+				$pickupPointValue = $orderFormValues[ $pickupPointAttr['name'] ];
 
 				if ( Checkout::ATTR_CARRIER_ID === $pickupPointAttr['name'] ) {
-					if ( ! empty( $values[ Checkout::ATTR_CARRIER_ID ] ) ) {
-						$value = $values[ Checkout::ATTR_CARRIER_ID ];
+					if ( ! empty( $orderFormValues[ Checkout::ATTR_CARRIER_ID ] ) ) {
+						$pickupPointValue = $orderFormValues[ Checkout::ATTR_CARRIER_ID ];
 					} else {
-						$value = Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX . strtolower( $wcOrder->get_shipping_country() );
+						$pickupPointValue = Entity\Carrier::INTERNAL_PICKUP_POINTS_PREFIX . strtolower( $wcOrder->get_shipping_country() );
 					}
 				}
 
-				$propsToSave[ $pickupPointAttr['name'] ] = $value;
+				$propsToSave[ $pickupPointAttr['name'] ] = $pickupPointValue;
 
 				if ( $this->optionsProvider->replaceShippingAddressWithPickupPointAddress() ) {
-					Checkout::updateShippingAddressProperty( $wcOrder, $pickupPointAttr['name'], (string) $value );
+					Checkout::updateShippingAddressProperty( $wcOrder, $pickupPointAttr['name'], (string) $pickupPointValue );
 				}
 			}
 			$wcOrder->save();
 		}
 
-		if ( '1' === $values[ Checkout::ATTR_ADDRESS_IS_VALIDATED ] && $order->isHomeDelivery() ) {
+		if ( '1' === $orderFormValues[ Checkout::ATTR_ADDRESS_IS_VALIDATED ] && $order->isHomeDelivery() ) {
 			$address = new Core\Entity\Address(
-				$values[ Checkout::ATTR_ADDRESS_STREET ],
-				$values[ Checkout::ATTR_ADDRESS_CITY ],
-				$values[ Checkout::ATTR_ADDRESS_POST_CODE ]
+				$orderFormValues[ Checkout::ATTR_ADDRESS_STREET ],
+				$orderFormValues[ Checkout::ATTR_ADDRESS_CITY ],
+				$orderFormValues[ Checkout::ATTR_ADDRESS_POST_CODE ]
 			);
-			$address->setHouseNumber( $values[ Checkout::ATTR_ADDRESS_HOUSE_NUMBER ] );
-			$address->setCounty( $values[ Checkout::ATTR_ADDRESS_COUNTY ] );
-			$address->setLatitude( $values[ Checkout::ATTR_ADDRESS_LATITUDE ] );
-			$address->setLongitude( $values[ Checkout::ATTR_ADDRESS_LONGITUDE ] );
+			$address->setHouseNumber( $orderFormValues[ Checkout::ATTR_ADDRESS_HOUSE_NUMBER ] );
+			$address->setCounty( $orderFormValues[ Checkout::ATTR_ADDRESS_COUNTY ] );
+			$address->setLatitude( $orderFormValues[ Checkout::ATTR_ADDRESS_LATITUDE ] );
+			$address->setLongitude( $orderFormValues[ Checkout::ATTR_ADDRESS_LONGITUDE ] );
 
 			$order->setDeliveryAddress( $address );
 			$order->setAddressValidated( true );
@@ -432,10 +432,10 @@ class Metabox {
 			}
 		}
 
-		$order->setAdultContent( $values[ self::FIELD_ADULT_CONTENT ] );
-		$order->setCod( is_numeric( $values[ self::FIELD_COD ] ) ? Helper::simplifyFloat( $values[ self::FIELD_COD ], 10 ) : null );
-		$order->setValue( is_numeric( $values[ self::FIELD_VALUE ] ) ? Helper::simplifyFloat( $values[ self::FIELD_VALUE ], 10 ) : null );
-		$order->setDeliverOn( $this->helper->getDateTimeFromString( $values[ self::FIELD_DELIVER_ON ] ) );
+		$order->setAdultContent( $orderFormValues[ self::FIELD_ADULT_CONTENT ] );
+		$order->setCod( is_numeric( $orderFormValues[ self::FIELD_COD ] ) ? Helper::simplifyFloat( $orderFormValues[ self::FIELD_COD ], 10 ) : null );
+		$order->setValue( is_numeric( $orderFormValues[ self::FIELD_VALUE ] ) ? Helper::simplifyFloat( $orderFormValues[ self::FIELD_VALUE ], 10 ) : null );
+		$order->setDeliverOn( $this->helper->getDateTimeFromString( $orderFormValues[ self::FIELD_DELIVER_ON ] ) );
 		$order->setSize( $orderSize );
 		Checkout::updateOrderEntityFromPropsToSave( $order, $propsToSave );
 		$this->orderRepository->save( $order );
