@@ -369,6 +369,14 @@ class Plugin {
 
 		register_uninstall_hook( $this->main_file_path, array( __CLASS__, 'uninstall' ) );
 
+		add_action( 'admin_menu', array( $this, 'add_menu_pages' ) );
+		add_action( 'admin_head', array( $this->labelPrint, 'hideFromMenus' ) );
+		add_action( 'admin_head', array( $this->orderCollectionPrint, 'hideFromMenus' ) );
+
+		if ( $this->upgrade->isInstalling() ) {
+			return;
+		}
+
 		add_action( 'woocommerce_email_footer', [ $this, 'renderEmailFooter' ] );
 		add_filter( 'woocommerce_shipping_methods', array( $this, 'add_shipping_method' ) );
 
@@ -381,9 +389,6 @@ class Plugin {
 
 		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', [ $this->upgrade, 'handleCustomQueryVar' ], 10, 2 );
 
-		add_action( 'admin_menu', array( $this, 'add_menu_pages' ) );
-		add_action( 'admin_head', array( $this->labelPrint, 'hideFromMenus' ) );
-		add_action( 'admin_head', array( $this->orderCollectionPrint, 'hideFromMenus' ) );
 		add_action( 'admin_head', [ $this, 'renderConfirmModalTemplate' ] );
 		$this->orderModal->register();
 		$this->order_metabox->register();
@@ -714,6 +719,10 @@ class Plugin {
 
 		if ( $isOrderGridPage || $isOrderDetailPage || $isProductPage || $isProductCategoryPage || in_array( $page, [ Options\Page::SLUG, Carrier\OptionsPage::SLUG, Log\Page::SLUG, Order\labelPrint::MENU_SLUG ], true ) ) {
 			$this->enqueueStyle( 'packetery-admin-styles', 'public/admin.css' );
+			// It is placed here so that typenow in contextResolver works and there is no need to repeat the conditions.
+			if ( $this->upgrade->isInstalling() ) {
+				add_action( 'admin_notices', [ $this->upgrade, 'echoInstallingNotice' ] );
+			}
 		}
 
 		if ( $isOrderGridPage ) {

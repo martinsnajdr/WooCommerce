@@ -15,6 +15,7 @@ use Packetery\Module\Checkout;
 use Packetery\Module\FormFactory;
 use Packetery\Module\FormValidators;
 use Packetery\Module\MessageManager;
+use Packetery\Module\Upgrade;
 use PacketeryLatte\Engine;
 use PacketeryNette\Forms\Container;
 use PacketeryNette\Forms\Form;
@@ -73,14 +74,22 @@ class OptionsPage {
 	private $messageManager;
 
 	/**
+	 * Plugin upgrade.
+	 *
+	 * @var Upgrade
+	 */
+	private $upgrade;
+
+	/**
 	 * Plugin constructor.
 	 *
-	 * @param Engine             $latteEngine PacketeryLatte_engine.
-	 * @param Repository         $carrierRepository Carrier repository.
-	 * @param FormFactory        $formFactory Form factory.
-	 * @param Request            $httpRequest PacketeryNette Request.
+	 * @param Engine             $latteEngine        PacketeryLatte_engine.
+	 * @param Repository         $carrierRepository  Carrier repository.
+	 * @param FormFactory        $formFactory        Form factory.
+	 * @param Request            $httpRequest        PacketeryNette Request.
 	 * @param CountryListingPage $countryListingPage CountryListingPage.
-	 * @param MessageManager     $messageManager Message manager.
+	 * @param MessageManager     $messageManager     Message manager.
+	 * @param Upgrade            $upgrade            Upgrade.
 	 */
 	public function __construct(
 		Engine $latteEngine,
@@ -88,7 +97,8 @@ class OptionsPage {
 		FormFactory $formFactory,
 		Request $httpRequest,
 		CountryListingPage $countryListingPage,
-		MessageManager $messageManager
+		MessageManager $messageManager,
+		Upgrade $upgrade
 	) {
 		$this->latteEngine        = $latteEngine;
 		$this->carrierRepository  = $carrierRepository;
@@ -96,6 +106,7 @@ class OptionsPage {
 		$this->httpRequest        = $httpRequest;
 		$this->countryListingPage = $countryListingPage;
 		$this->messageManager     = $messageManager;
+		$this->upgrade            = $upgrade;
 	}
 
 	/**
@@ -311,6 +322,10 @@ class OptionsPage {
 	 *  Renders page.
 	 */
 	public function render(): void {
+		if ( $this->upgrade->isInstalling() ) {
+			return;
+		}
+
 		$countryIso = $this->httpRequest->getQuery( 'code' );
 		if ( $countryIso ) {
 			$countryCarriers = $this->carrierRepository->getByCountryIncludingZpoints( $countryIso );

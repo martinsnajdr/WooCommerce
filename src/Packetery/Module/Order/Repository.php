@@ -653,4 +653,13 @@ class Repository {
 		}
 	}
 
+	/**
+	 * Migrates 'packeta' carrier ids to proper form.
+	 *
+	 * @return void
+	 */
+	public function migrateCarrierIdsOfPickupPointOrders() {
+		// TODO 1053 waiting for feed refactor.
+	}
+
 }
