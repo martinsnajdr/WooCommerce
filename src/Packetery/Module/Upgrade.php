@@ -139,8 +139,7 @@ class Upgrade {
 			return;
 		}
 
-		set_transient( self::MIGRATION_TRANSIENT, 'yes' );
-
+		// Legacy synchronous part start. TODO make asynchronous.
 		$this->createCarrierTable();
 		$this->createOrderTable();
 
@@ -194,6 +193,12 @@ class Upgrade {
 			$version_1_4_2 = new Version_1_4_2( $this->wpdbAdapter );
 			$version_1_4_2->run();
 		}
+
+		// Asynchronous part start.
+		if ( $this->isInstalling() ) {
+			return;
+		}
+		set_transient( self::MIGRATION_TRANSIENT, 'yes' );
 
 		// TODO: change version to target version.
 		$nextVersion = '1.4';
