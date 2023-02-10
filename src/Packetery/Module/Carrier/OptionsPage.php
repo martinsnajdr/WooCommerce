@@ -11,7 +11,7 @@ namespace Packetery\Module\Carrier;
 
 use Packetery\Core\Helper;
 use Packetery\Core\Rounder;
-use Packetery\Module\Checkout;
+use Packetery\Module\CartOrder;
 use Packetery\Module\FormFactory;
 use Packetery\Module\FormValidators;
 use Packetery\Module\MessageManager;
@@ -27,8 +27,9 @@ use PacketeryNette\Http\Request;
  */
 class OptionsPage {
 
-	public const FORM_FIELD_NAME = 'name';
-	public const SLUG            = 'packeta-country';
+	public const FORM_FIELD_NAME         = 'name';
+	public const SLUG                    = 'packeta-country';
+	public const MINIMUM_CHECKED_VENDORS = 2;
 
 	/**
 	 * PacketeryLatte_engine.
@@ -124,7 +125,7 @@ class OptionsPage {
 	 * @return Form
 	 */
 	private function createForm( array $carrierData ): Form {
-		$optionId = Checkout::CARRIER_PREFIX . $carrierData['id'];
+		$optionId = CartOrder::CARRIER_PREFIX . $carrierData['id'];
 
 		$form = $this->formFactory->create( $optionId );
 
@@ -135,6 +136,45 @@ class OptionsPage {
 
 		$form->addText( self::FORM_FIELD_NAME, __( 'Display name', 'packeta' ) . ':' )
 			->setRequired();
+
+		$availableVendors = [];
+		if ( strpos( $carrierData['id'], 'zpoint' ) === 0 ) {
+			$zPointCarriers = $this->carrierRepository->getZpointCarriers();
+			foreach ( $zPointCarriers as $zpointCarrier ) {
+				$availableVendors[ $zpointCarrier['id'] ] = $zpointCarrier['vendors'];
+			}
+		}
+
+		$carrierOptions = get_option( $optionId );
+		if (
+			! empty( $availableVendors ) &&
+			! empty( $availableVendors[ $carrierData['id'] ] )
+		) {
+			$vendors = $this->carrierRepository->getVendorCarriers();
+
+			if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
+				$hiddenVendors = $form->addContainer( 'vendor_defaults' );
+				foreach ( $availableVendors[ $carrierData['id'] ] as $vendorId ) {
+					$hiddenVendors->addHidden( $vendorId, true );
+				}
+			}
+
+			$vendorCheckboxes = $form->addContainer( 'vendors' );
+			foreach ( $availableVendors[ $carrierData['id'] ] as $vendorId ) {
+				$vendorData = $vendors[ $vendorId ];
+				$checkbox   = $vendorCheckboxes->addCheckbox( $vendorId, $vendorData['name'] );
+				if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
+					$checkbox->setDisabled();
+				}
+				if (
+					! isset( $carrierOptions['vendors'] ) ||
+					count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ||
+					in_array( $vendorId, $carrierOptions['vendors'], true )
+				) {
+					$checkbox->setDefaultValue( true );
+				}
+			}
+		}
 
 		$weightLimits = $form->addContainer( 'weight_limits' );
 		if ( empty( $carrierData['weight_limits'] ) ) {
@@ -200,7 +240,6 @@ class OptionsPage {
 		$form->onValidate[] = [ $this, 'validateOptions' ];
 		$form->onSuccess[]  = [ $this, 'updateOptions' ];
 
-		$carrierOptions       = get_option( $optionId );
 		$carrierOptions['id'] = $carrierData['id'];
 		if ( empty( $carrierOptions[ self::FORM_FIELD_NAME ] ) ) {
 			$carrierOptions[ self::FORM_FIELD_NAME ] = $carrierData['name'];
@@ -229,7 +268,7 @@ class OptionsPage {
 	 * @return Form
 	 */
 	private function createFormTemplate( array $carrierData ): Form {
-		$optionId = Checkout::CARRIER_PREFIX . $carrierData['id'];
+		$optionId = CartOrder::CARRIER_PREFIX . $carrierData['id'];
 
 		$form = $this->formFactory->create( $optionId . '_template' );
 
@@ -254,6 +293,13 @@ class OptionsPage {
 		}
 
 		$options = $form->getValues( 'array' );
+
+		$checkedVendors = $this->getCheckedVendors( $options );
+		if ( isset( $options['vendors'] ) && count( $options['vendors'] ) >= self::MINIMUM_CHECKED_VENDORS && count( $checkedVendors ) < self::MINIMUM_CHECKED_VENDORS ) {
+			$vendorMessage = __( 'Check at least two types of pickup points or set corresponding separate carriers.', 'packeta' );
+			add_settings_error( 'vendors', 'vendors', esc_attr( $vendorMessage ) );
+			$form->addError( $vendorMessage );
+		}
 
 		$this->checkOverlapping(
 			$form,
@@ -281,7 +327,11 @@ class OptionsPage {
 	 * @return void
 	 */
 	public function updateOptions( Form $form ): void {
-		$options = $form->getValues( 'array' );
+		$options    = $form->getValues( 'array' );
+		$newVendors = $this->getCheckedVendors( $options );
+		if ( $newVendors ) {
+			$options['vendors'] = $newVendors;
+		}
 
 		$options = $this->mergeNewLimits( $options, 'weight_limits' );
 		$options = $this->sortLimits( $options, 'weight_limits', 'weight' );
@@ -290,7 +340,7 @@ class OptionsPage {
 			$options = $this->sortLimits( $options, 'surcharge_limits', 'order_price' );
 		}
 
-		update_option( Checkout::CARRIER_PREFIX . $options['id'], $options );
+		update_option( CartOrder::CARRIER_PREFIX . $options['id'], $options );
 		$this->messageManager->flash_message( __( 'Settings saved', 'packeta' ), MessageManager::TYPE_SUCCESS, MessageManager::RENDERER_PACKETERY, 'carrier-country' );
 
 		if ( wp_safe_redirect(
@@ -325,7 +375,7 @@ class OptionsPage {
 					}
 				} else {
 					$carrierData = $carrier->__toArray();
-					$options     = get_option( Checkout::CARRIER_PREFIX . $carrier->getId() );
+					$options     = get_option( CartOrder::CARRIER_PREFIX . $carrier->getId() );
 					if ( false !== $options ) {
 						$carrierData += $options;
 					}
@@ -365,6 +415,8 @@ class OptionsPage {
 						'noKnownCarrierForThisCountry' => __( 'No carriers available for this country.', 'packeta' ),
 						'ageVerificationSupportedNotification' => __( 'When shipping via this carrier, you can order the Age Verification service. The service will get ordered automatically if there is at least 1 product in the order with the age verification setting.', 'packeta' ),
 						'carrierDoesNotSupportCod'     => __( 'This carrier does not support COD payment.', 'packeta' ),
+						'allowedPickupPointTypes'      => __( 'Allowed pickup point types.', 'packeta' ),
+						'checkAtLeastTwo'              => __( 'Check at least two types of pickup points or set corresponding separate carriers.', 'packeta' ),
 					],
 				]
 			);
@@ -509,4 +561,31 @@ class OptionsPage {
 			admin_url( 'admin.php' )
 		);
 	}
+
+	/**
+	 * Gets checked vendors.
+	 *
+	 * @param array $options Form options.
+	 *
+	 * @return array
+	 */
+	private function getCheckedVendors( array $options ): array {
+		$vendors = [];
+		if ( ! empty( $options['vendors'] ) ) {
+			$vendors = $options['vendors'];
+		} elseif ( isset( $options['vendor_defaults'] ) ) {
+			$vendors = $options['vendor_defaults'];
+		}
+
+		$newVendors = [];
+		foreach ( $vendors as $vendorId => $vendorActive ) {
+			if ( ! $vendorActive ) {
+				continue;
+			}
+			$newVendors[] = $vendorId;
+		}
+
+		return $newVendors;
+	}
+
 }

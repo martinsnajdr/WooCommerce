@@ -49,7 +49,7 @@
         </div>
 
         {if $order->isPickupPointDelivery()}
-            {foreach Packetery\Module\Checkout::$pickupPointAttrs as $attr}
+            {foreach Packetery\Module\CartOrder::$pickupPointAttrs as $attr}
                 <input n:name=$attr[name] />
             {/foreach}
             <div id="packetery-widget-button-wrapper">
@@ -62,7 +62,7 @@
         {/if}
 
         {if $order->isHomeDelivery()}
-            {foreach Packetery\Module\Checkout::$homeDeliveryAttrs as $attr}
+            {foreach Packetery\Module\CartOrder::$homeDeliveryAttrs as $attr}
                 <input n:name=$attr[name] />
             {/foreach}
             <div id="packetery-widget-button-wrapper">
