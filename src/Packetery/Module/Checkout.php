@@ -376,27 +376,27 @@ class Checkout {
 			}
 
 			if ( ! $error ) {
-				$pickupPointId = $post[ CartOrder::ATTR_POINT_ID ];
-				$carrierId     = ( $post[ CartOrder::ATTR_CARRIER_ID ] ?? null );
-				// TODO: re-enable after external carrier's pickup points validation is fixed and vendors implemented.
-				if ( Carrier\Repository::INTERNAL_PICKUP_POINTS_ID === $carrierId ) {
-					{
-						$pickupPointValidationResponse = $this->pickupPointValidator->validate(
-							$this->getPickupPointValidateRequest(
-								$pickupPointId,
-								$carrierId,
-								( is_numeric( $carrierId ) ? $pickupPointId : null ),
-								$chosenShippingMethod
-							)
-						);
-					}
-					if ( ! $pickupPointValidationResponse->isValid() ) {
-						wc_add_notice( __( 'The selected Packeta pickup point could not be validated. Please select another.', 'packeta' ), 'error' );
-						foreach ( $pickupPointValidationResponse->getErrors() as $validationError ) {
-							$reason = $this->pickupPointValidator->getTranslatedError()[ $validationError['code'] ];
-							// translators: %s: Reason for validation failure.
-							wc_add_notice( sprintf( __( 'Reason: %s', 'packeta' ), $reason ), 'error' );
-						}
+				$pickupPointId         = $post[ CartOrder::ATTR_POINT_ID ];
+				$carrierId             = ( $post[ CartOrder::ATTR_CARRIER_ID ] ?? null );
+				$carriersForValidation = $chosenShippingMethod;
+				if ( '' === $carrierId ) {
+					$carrierId             = Carrier\Repository::INTERNAL_PICKUP_POINTS_ID;
+					$carriersForValidation = Carrier\Repository::INTERNAL_PICKUP_POINTS_ID;
+				}
+				$pickupPointValidationResponse = $this->pickupPointValidator->validate(
+					$this->getPickupPointValidateRequest(
+						$pickupPointId,
+						$carrierId,
+						( is_numeric( $carrierId ) ? $pickupPointId : null ),
+						$carriersForValidation
+					)
+				);
+				if ( ! $pickupPointValidationResponse->isValid() ) {
+					wc_add_notice( __( 'The selected Packeta pickup point could not be validated. Please select another.', 'packeta' ), 'error' );
+					foreach ( $pickupPointValidationResponse->getErrors() as $validationError ) {
+						$reason = $this->pickupPointValidator->getTranslatedError()[ $validationError['code'] ];
+						// translators: %s: Reason for validation failure.
+						wc_add_notice( sprintf( __( 'Reason: %s', 'packeta' ), $reason ), 'error' );
 					}
 				}
 			}
