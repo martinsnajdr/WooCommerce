@@ -125,12 +125,21 @@ class CartOrder {
 	private $currencySwitcherFacade;
 
 	/**
+	 * Carrier repository.
+	 *
+	 * @var Carrier\Repository
+	 */
+	private $carrierRepository;
+
+	/**
 	 * CartOrder constructor.
 	 *
 	 * @param CurrencySwitcherFacade $currencySwitcherFacade Currency switcher facade.
+	 * @param Carrier\Repository     $carrierRepository Carrier repository.
 	 */
-	public function __construct( CurrencySwitcherFacade $currencySwitcherFacade ) {
+	public function __construct( CurrencySwitcherFacade $currencySwitcherFacade, Carrier\Repository $carrierRepository ) {
 		$this->currencySwitcherFacade = $currencySwitcherFacade;
+		$this->carrierRepository      = $carrierRepository;
 	}
 
 	/**
@@ -211,7 +220,7 @@ class CartOrder {
 			return null;
 		}
 
-		if ( strpos( $branchServiceId, 'zpoint' ) === 0 ) {
+		if ( $this->carrierRepository->isZpointCarrierId( $branchServiceId ) ) {
 			return Carrier\Repository::INTERNAL_PICKUP_POINTS_ID;
 		}
 

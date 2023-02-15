@@ -160,8 +160,8 @@
                         </td>
                     </tr>
 
-                    {if isset($form['vendors'])}
-                        {var $vendorCheckboxes = $form['vendors']->getComponents()}
+                    {if isset($form['vendor_codes'])}
+                        {var $vendorCheckboxes = $form['vendor_codes']->getComponents()}
                         <tr>
                             <th scope="row">
                                 <label>{$translations['allowedPickupPointTypes']}:</label>

@@ -501,18 +501,20 @@ class Metabox {
 			'appIdentity'  => Plugin::getAppIdentity(),
 			'weight'       => $order->getFinalWeight(),
 			'defaultPrice' => $defaultPrice,
-			// In backend, we want all pickup points in that country for packeta carrier.
-			'vendors'      => $order->getCarrierId() === Carrier\Repository::INTERNAL_PICKUP_POINTS_ID ? null : [
-				[
-					'code'     => $order->getCarrierId(),
-					'selected' => true,
-				],
-			],
 		];
+
 		// TODO: update later when carrier will not be nullable.
 		$orderCarrier = $order->getCarrier();
 		if ( $orderCarrier ) {
 			$widgetOptions['defaultCurrency'] = $orderCarrier->getCurrency();
+		}
+
+		// In backend, we want all pickup points in that country for packeta carrier.
+		if ( $order->getCarrierId() !== Carrier\Repository::INTERNAL_PICKUP_POINTS_ID ) {
+			$widgetOptions['vendors'] = [
+				'code'     => $order->getCarrierId(),
+				'selected' => true,
+			];
 		}
 
 		if ( $order->containsAdultContent() ) {

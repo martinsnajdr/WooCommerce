@@ -204,12 +204,12 @@ class Checkout {
 	 *
 	 * @param bool       $isPickupPoints Is context pickup point related.
 	 * @param string     $carrierId      Carrier id.
-	 * @param array|null $vendors        Vendors.
+	 * @param array|null $vendorCodes    Vendors.
 	 *
 	 * @return array|null
 	 */
-	private function getWidgetVendorsParam( bool $isPickupPoints, string $carrierId, ?array $vendors ): ?array {
-		if ( empty( $vendors ) && $isPickupPoints ) {
+	private function getWidgetVendorsParam( bool $isPickupPoints, string $carrierId, ?array $vendorCodes ): ?array {
+		if ( empty( $vendorCodes ) && $isPickupPoints ) {
 			return [
 				[
 					'code'     => $carrierId,
@@ -218,12 +218,12 @@ class Checkout {
 			];
 		}
 
-		if ( empty( $vendors ) ) {
+		if ( empty( $vendorCodes ) ) {
 			return null;
 		}
 
 		$vendorsParam = [];
-		foreach ( $vendors as $code ) {
+		foreach ( $vendorCodes as $code ) {
 			$vendorsParam[] = [
 				'code'     => $code,
 				'selected' => true,
@@ -268,7 +268,7 @@ class Checkout {
 				$carrierConfig[ $optionId ]['vendors'] = $this->getWidgetVendorsParam(
 					(bool) $carrier['is_pickup_points'],
 					(string) $carrier['id'],
-					( ( $carrierOption && isset( $carrierOption['vendors'] ) ) ? $carrierOption['vendors'] : null )
+					( ( $carrierOption && isset( $carrierOption['vendor_codes'] ) ) ? $carrierOption['vendor_codes'] : null )
 				);
 			}
 

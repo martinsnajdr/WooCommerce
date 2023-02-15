@@ -22,6 +22,7 @@ use Packetery\Module\WpdbAdapter;
 class Repository {
 
 	public const INTERNAL_PICKUP_POINTS_ID = 'packeta';
+	public const ZPOINT_CARRIER_PREFIX     = 'zpoint';
 
 	private const COLUMN_NAMES = [
 		'id',
@@ -358,7 +359,7 @@ class Repository {
 				'is_pickup_points'          => 1,
 				'currency'                  => 'CZK',
 				'supports_age_verification' => true,
-				'vendors'                   => [
+				'vendor_codes'              => [
 					'czzpoint',
 					'czzbox',
 					'czalzabox',
@@ -370,7 +371,7 @@ class Repository {
 				'is_pickup_points'          => 1,
 				'currency'                  => 'EUR',
 				'supports_age_verification' => true,
-				'vendors'                   => [
+				'vendor_codes'              => [
 					'skzpoint',
 					'skzbox',
 				],
@@ -381,7 +382,7 @@ class Repository {
 				'is_pickup_points'          => 1,
 				'currency'                  => 'HUF',
 				'supports_age_verification' => true,
-				'vendors'                   => [
+				'vendor_codes'              => [
 					'huzpoint',
 					'huzbox',
 				],
@@ -392,7 +393,7 @@ class Repository {
 				'is_pickup_points'          => 1,
 				'currency'                  => 'RON',
 				'supports_age_verification' => true,
-				'vendors'                   => [
+				'vendor_codes'              => [
 					'rozpoint',
 					'rozbox',
 				],
@@ -478,7 +479,7 @@ class Repository {
 				'currency'                  => $zPointCarriers[ $vendorCarrier['country'] ]['currency'],
 				'supports_age_verification' => $zPointCarriers[ $vendorCarrier['country'] ]['supports_age_verification'],
 
-				'vendors'                   => [ $carrierId ],
+				'vendor_codes'              => [ $carrierId ],
 				'country'                   => $vendorCarrier['country'],
 				'supports_cod'              => $vendorCarrier['supports_cod'],
 			];
@@ -595,6 +596,17 @@ class Repository {
 		}
 
 		return Options::createByCarrierId( $carrier->getId() )->isActive();
+	}
+
+	/**
+	 * Checks if id is zpoint carrier id.
+	 *
+	 * @param string $carrierId Carrier id.
+	 *
+	 * @return bool
+	 */
+	public function isZpointCarrierId( string $carrierId ): bool {
+		return ( strpos( $carrierId, self::ZPOINT_CARRIER_PREFIX ) === 0 );
 	}
 
 }

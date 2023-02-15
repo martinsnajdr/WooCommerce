@@ -138,10 +138,10 @@ class OptionsPage {
 			->setRequired();
 
 		$availableVendors = [];
-		if ( strpos( $carrierData['id'], 'zpoint' ) === 0 ) {
+		if ( $this->carrierRepository->isZpointCarrierId( $carrierData['id'] ) ) {
 			$zPointCarriers = $this->carrierRepository->getZpointCarriers();
 			foreach ( $zPointCarriers as $zpointCarrier ) {
-				$availableVendors[ $zpointCarrier['id'] ] = $zpointCarrier['vendors'];
+				$availableVendors[ $zpointCarrier['id'] ] = $zpointCarrier['vendor_codes'];
 			}
 		}
 
@@ -150,7 +150,7 @@ class OptionsPage {
 			! empty( $availableVendors ) &&
 			! empty( $availableVendors[ $carrierData['id'] ] )
 		) {
-			$vendors = $this->carrierRepository->getVendorCarriers();
+			$vendorCarriers = $this->carrierRepository->getVendorCarriers();
 
 			if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
 				$hiddenVendors = $form->addContainer( 'vendor_defaults' );
@@ -159,17 +159,17 @@ class OptionsPage {
 				}
 			}
 
-			$vendorCheckboxes = $form->addContainer( 'vendors' );
+			$vendorCheckboxes = $form->addContainer( 'vendor_codes' );
 			foreach ( $availableVendors[ $carrierData['id'] ] as $vendorId ) {
-				$vendorData = $vendors[ $vendorId ];
+				$vendorData = $vendorCarriers[ $vendorId ];
 				$checkbox   = $vendorCheckboxes->addCheckbox( $vendorId, $vendorData['name'] );
 				if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
 					$checkbox->setDisabled();
 				}
 				if (
-					! isset( $carrierOptions['vendors'] ) ||
+					! isset( $carrierOptions['vendor_codes'] ) ||
 					count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ||
-					in_array( $vendorId, $carrierOptions['vendors'], true )
+					in_array( $vendorId, $carrierOptions['vendor_codes'], true )
 				) {
 					$checkbox->setDefaultValue( true );
 				}
@@ -295,9 +295,13 @@ class OptionsPage {
 		$options = $form->getValues( 'array' );
 
 		$checkedVendors = $this->getCheckedVendors( $options );
-		if ( isset( $options['vendors'] ) && count( $options['vendors'] ) >= self::MINIMUM_CHECKED_VENDORS && count( $checkedVendors ) < self::MINIMUM_CHECKED_VENDORS ) {
+		if (
+			isset( $options['vendor_codes'] ) &&
+			count( $options['vendor_codes'] ) >= self::MINIMUM_CHECKED_VENDORS &&
+			count( $checkedVendors ) < self::MINIMUM_CHECKED_VENDORS
+		) {
 			$vendorMessage = __( 'Check at least two types of pickup points or set corresponding separate carriers.', 'packeta' );
-			add_settings_error( 'vendors', 'vendors', esc_attr( $vendorMessage ) );
+			add_settings_error( 'vendor_codes', 'vendor_codes', esc_attr( $vendorMessage ) );
 			$form->addError( $vendorMessage );
 		}
 
@@ -330,7 +334,7 @@ class OptionsPage {
 		$options    = $form->getValues( 'array' );
 		$newVendors = $this->getCheckedVendors( $options );
 		if ( $newVendors ) {
-			$options['vendors'] = $newVendors;
+			$options['vendor_codes'] = $newVendors;
 		}
 
 		$options = $this->mergeNewLimits( $options, 'weight_limits' );
@@ -570,15 +574,15 @@ class OptionsPage {
 	 * @return array
 	 */
 	private function getCheckedVendors( array $options ): array {
-		$vendors = [];
-		if ( ! empty( $options['vendors'] ) ) {
-			$vendors = $options['vendors'];
+		$vendorCodes = [];
+		if ( ! empty( $options['vendor_codes'] ) ) {
+			$vendorCodes = $options['vendor_codes'];
 		} elseif ( isset( $options['vendor_defaults'] ) ) {
-			$vendors = $options['vendor_defaults'];
+			$vendorCodes = $options['vendor_defaults'];
 		}
 
 		$newVendors = [];
-		foreach ( $vendors as $vendorId => $vendorActive ) {
+		foreach ( $vendorCodes as $vendorId => $vendorActive ) {
 			if ( ! $vendorActive ) {
 				continue;
 			}
