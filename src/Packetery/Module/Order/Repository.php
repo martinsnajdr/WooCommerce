@@ -466,7 +466,7 @@ class Repository {
 		$orPacketStatus[] = 'o.`packet_status` IS NULL';
 
 		if ( $allowedPacketStatuses ) {
-			$orPacketStatus[] = 'o.`packet_status` IN (' . $this->wpdbAdapter->prepareInClause( $allowedOrderStatuses ) . ')';
+			$orPacketStatus[] = '`o`.`packet_status` IN (' . $this->wpdbAdapter->prepareInClause( $allowedOrderStatuses ) . ')';
 		}
 
 		if ( $orPacketStatus ) {
@@ -474,7 +474,7 @@ class Repository {
 		}
 
 		if ( $allowedOrderStatuses ) {
-			$andWhere[] = 'wp_p.`post_status` IN (' . $this->wpdbAdapter->prepareInClause( $allowedOrderStatuses ) . ')';
+			$andWhere[] = '`wp_p`.`post_status` IN (' . $this->wpdbAdapter->prepareInClause( $allowedOrderStatuses ) . ')';
 		} else {
 			$andWhere[] = '1 = 0';
 		}
