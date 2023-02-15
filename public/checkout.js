@@ -276,6 +276,9 @@ var packeteryLoadCheckout = function( $, settings ) {
 		var stringifyOptions = function (widgetOptions) {
 			var widgeOptionsArray = [];
 			for (const property in widgetOptions) {
+				if (!widgetOptions.hasOwnProperty(property)) {
+					continue;
+				}
 				if (typeof widgetOptions[property] === 'object') {
 					widgeOptionsArray.push(property + ': ' + stringifyOptions(widgetOptions[property]));
 				} else {
