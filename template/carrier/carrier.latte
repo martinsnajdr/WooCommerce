@@ -292,12 +292,6 @@
                     </tr>
                 </table>
 
-                {if isset($form['vendor_defaults'])}
-                    {foreach $form['vendor_defaults']->getComponents() as $component}
-                        <input n:name=$component>
-                    {/foreach}
-                {/if}
-
                 <p class="submit">
                     <button n:name=save class="button button-primary">{$translations['saveChanges']}</button>
                 </p>

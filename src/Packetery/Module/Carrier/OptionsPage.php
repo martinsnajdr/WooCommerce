@@ -152,19 +152,12 @@ class OptionsPage {
 		) {
 			$vendorCarriers = $this->carrierRepository->getVendorCarriers();
 
-			if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
-				$hiddenVendors = $form->addContainer( 'vendor_defaults' );
-				foreach ( $availableVendors[ $carrierData['id'] ] as $vendorId ) {
-					$hiddenVendors->addHidden( $vendorId, true );
-				}
-			}
-
 			$vendorCheckboxes = $form->addContainer( 'vendor_codes' );
 			foreach ( $availableVendors[ $carrierData['id'] ] as $vendorId ) {
 				$vendorData = $vendorCarriers[ $vendorId ];
 				$checkbox   = $vendorCheckboxes->addCheckbox( $vendorId, $vendorData['name'] );
 				if ( count( $availableVendors[ $carrierData['id'] ] ) <= self::MINIMUM_CHECKED_VENDORS ) {
-					$checkbox->setDisabled();
+					$checkbox->setDisabled()->setOmitted( false );
 				}
 				if (
 					! isset( $carrierOptions['vendor_codes'] ) ||
@@ -577,8 +570,6 @@ class OptionsPage {
 		$vendorCodes = [];
 		if ( ! empty( $options['vendor_codes'] ) ) {
 			$vendorCodes = $options['vendor_codes'];
-		} elseif ( isset( $options['vendor_defaults'] ) ) {
-			$vendorCodes = $options['vendor_defaults'];
 		}
 
 		$newVendors = [];
