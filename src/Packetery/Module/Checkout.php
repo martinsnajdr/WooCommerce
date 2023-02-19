@@ -334,7 +334,7 @@ class Checkout {
 			}
 		}
 
-		return [
+		return apply_filters( 'packeta_checkout_settings', [
 			/**
 			 * Filter widget language in checkout.
 			 *
@@ -361,7 +361,7 @@ class Checkout {
 				'addressIsNotValidated'         => __( 'Delivery address has not been verified.', 'packeta' ),
 				'addressIsNotValidatedAndRequiredByCarrier' => __( 'Delivery address has not been verified. Verification of delivery address is required by this carrier.', 'packeta' ),
 			],
-		];
+		] );
 	}
 
 	/**
@@ -791,7 +791,7 @@ class Checkout {
 			}
 		}
 
-		return $customRates;
+		return apply_filters( 'packeta_shipping_rates', $customRates );
 	}
 
 	/**

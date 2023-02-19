@@ -120,7 +120,7 @@ class Repository {
 			array_unshift( $carriers, $zpointCarrier );
 		}
 
-		return $carriers;
+		return apply_filters( 'packeta_all_carriers', $carriers );
 	}
 
 	/**
@@ -350,7 +350,7 @@ class Repository {
 	 * @return array[]
 	 */
 	public function getZpointCarriers(): array {
-		return [
+		return apply_filters( 'packeta_zpoint_carriers', [
 			'cz' => [
 				'id'                        => 'zpointcz',
 				'name'                      => __( 'CZ Packeta pickup points', 'packeta' ),
@@ -379,7 +379,7 @@ class Repository {
 				'currency'                  => 'RON',
 				'supports_age_verification' => true,
 			],
-		];
+		] );
 	}
 
 	/**
